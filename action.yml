@@ -1,11 +1,32 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: "Your name here"
+description: "Provide a description here"
+author: "Your name or organization here"
 inputs:
-  milliseconds: # change this
+  status:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: "the states of release action"
+
+  template_id:
+    required: true
+    description: "the lark template ID. You can create by self or use template.json"
+
+  notification_title:
+    required: false
+    description: "the title of notification"
+    default: "${{ github.repository }}"
+
+  users:
+    required: true
+    description: "the user mapping to the lark's open id, e.g. Alice|openID,Bob|openID"
+
+  webhook:
+    required: true
+    description: "the lark robot's webhook"
+
+  secret:
+    required: false
+    description: "the secret to signature verfiy"
+
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
