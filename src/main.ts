@@ -1,19 +1,36 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {env} from 'process'
+import {generateMessage, notify} from './lark'
 
 async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    try {
+        const tagName = env.INPUT_TAG_NAME?.trim()
+        const draft = env.INPUT_DRAFT ? env.INPUT_DRAFT === 'true' : undefined
+        const ref = env.GITHUB_REF || ''
+        if (!tagName || draft || !ref.startsWith('refs/tags/')) {
+            throw new Error('lark-release-notify require a tag')
+        }
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+        const status = core.getInput('status')
+        const templateID = core.getInput('template_id')
+        const notificationTitle = core.getInput('notification_title')
+        const users = core.getInput('users')
+        const webhook = core.getInput('webhook')
+        const secret = core.getInput('secret')
 
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
-  }
+        const message = generateMessage(
+            templateID,
+            notificationTitle,
+            tagName,
+            users,
+            status,
+            secret
+        )
+
+        await notify(webhook, message)
+    } catch (error) {
+        if (error instanceof Error) core.setFailed(error.message)
+    }
 }
 
 run()
